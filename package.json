@@ -1,0 +1,8 @@
+{
+    "name": "soft_body_simulation",
+    "version": "1.0.0",
+    "scripts": {
+        "pre-dev": "npm install -g parcel",
+        "dev": "parcel index.html -p 8889"
+    }
+}
