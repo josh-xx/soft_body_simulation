@@ -49,7 +49,6 @@ class Spring {
     }
 
     update() {
-        // this.applyForce()
         this.p1.acceleration = new Vec2()
         this.p2.acceleration = new Vec2()
 
@@ -62,10 +61,6 @@ class Spring {
         let p2 = new Vec2(this.p2.x, this.p2.y)
         let v1 = new Vec2(this.p1.vx, this.p1.vy)
         let v2 = new Vec2(this.p2.vx, this.p2.vy)
-
-        // if (!(p1.x <= p2.x && p1.y <= p2.y)) {
-        //     throw Error(`${p1.x} ${p1.y} ${p2.x} ${p2.y}`)
-        // }
 
         let length = p2.sub(p1).length()
         let direction = p2.sub(p1).normalize()
@@ -89,11 +84,13 @@ class Spring {
             this.p2.y = pos2.y
         }
 
+        // 胡克定律
         let fs = direction.multiplyScalar(this.ks).multiplyScalar(length - this.restLength)
         let fd = direction.multiplyScalar(v2.sub(v1).dot(direction)).multiplyScalar(this.kd)
 
         let f = fs.add(fd)
 
+        // 叠加 acceleration 来处理多种力
         this.p1.acceleration.x += f.x / this.p1.mass
         this.p1.acceleration.y += f.y / this.p1.mass
 
@@ -129,6 +126,8 @@ class Spring {
 const __main = () => {
     let canvas = document.querySelector('canvas')
     let context = canvas.getContext('2d')
+
+    let canvasRect = canvas.getBoundingClientRect()
 
     // let springs = []
     // let num = 10
@@ -171,14 +170,57 @@ const __main = () => {
     // context.stroke()
 
     let p1 = new Point(100, 100)
-    let p2 = new Point(140, 140)
-    let s = new Spring(p1, p2, 100)
+    let p2 = new Point(100, 120)
+    let p3 = new Point(140, 140)
+    let s1 = new Spring(p1, p2, 100)
+    let s2 = new Spring(p2, p3, 100)
+    let s3 = new Spring(p3, p1, 100)
+
+    let mouseDown = false
+    let mouseX = 0
+    let mouseY = 0
+    let mouseOnPoint = null
+
+    canvas.addEventListener('mousedown', (event) => {
+        let x = event.clientX - canvasRect.x
+        let y = event.clientY - canvasRect.y
+
+        for (let point of [p1, p2, p3]) {
+            if (Math.abs(x - point.x) < 10 && Math.abs(y - point.y) < 10) {
+                mouseDown = true
+                mouseOnPoint = point
+            }
+        }
+    })
+
+    canvas.addEventListener('mousemove', (event) => {
+        if (mouseDown) {
+            let x = event.clientX - canvasRect.x
+            let y = event.clientY - canvasRect.y
+
+            mouseX = x
+            mouseY = y
+
+            mouseOnPoint.x = mouseX
+            mouseOnPoint.y = mouseY
+        }
+    })
+
+    canvas.addEventListener('mouseup', (event) => {
+        mouseOnPoint = null
+        mouseDown = false
+    })
+
 
     const run = () => {
         context.clearRect(0, 0, 1000, 1000)
 
-        s.update()
-        s.draw(canvas, context)
+        s1.update()
+        s1.draw(canvas, context)
+        s2.update()
+        s2.draw(canvas, context)
+        s3.update()
+        s3.draw(canvas, context)
 
         setTimeout(() => run(), 1000 / 60)
     }
